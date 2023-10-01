@@ -1,8 +1,6 @@
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import OpenAI from "openai";
-
-type UIFramework = "react";
-type CSSFramwork = "tailwind";
+import { CSSFramwork, UIFramework } from "@/app/types/LLM.types";
 
 interface CreateUIBlockRequestInterface {
   prompt: string;
@@ -53,15 +51,20 @@ export async function POST(req: RequestUIBlock) {
 
   const generateUIBlockPrompt = formatUIBlockPrompt.formatPrompt();
 
-  const response = await openai.completions.create({
-    model: "text-davinci-003",
+  const chatCompletionMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+    {
+      role: "system",
+      content: "You are a frontend developer building UI's for the web."
+    }
+  ]
+
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-3.5-turbo-16k",
+    temperature: 0.9,
     stream: true,
-    max_tokens: 4000,
-    prompt: `Create a frontend for the web
-    ${generateUIBlockPrompt}
-    Here is what needs to be build: ${prompt}
-    `,
-  });
+    messages: chatCompletionMessages
+  })
 
   // type error from response
   const stream = OpenAIStream(response as any);
